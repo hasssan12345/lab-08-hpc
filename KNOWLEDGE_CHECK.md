@@ -31,8 +31,7 @@ You submitted your entire job array with one `sbatch` command, but Slurm schedul
 **Your answer:** Did all tasks in the array start at the same time? Was the elapsed time identical for every task? Explain why or why not.
 
 
-My jobs are still pending, so I can't compare their start times or how long they took. Slurm runs tasks separately, so they might start at different times and take different amounts of time.
-
+My tasks did not all start at the same time or run for the same length of time because Slurm schedules each task separately.
 
 
 ## 3. Slurm: did my job use what it asked for?
@@ -45,4 +44,5 @@ Suppose your next job array has 1,000 books instead of 101. Before you submit it
 
 **Your answer:** How much memory and time did the task use, compared with what your script asked for? What would you change in your script, and why?
 
-My jobs are still pending, so I can't check how much memory or time they used. I would use `seff` after a job finishes to see if I need to change the memory or time limits.
+
+My job used 1.37 GB of 16 GB and ran for 49 seconds out of 5 minutes. I would keep the limits because the job failed early.
