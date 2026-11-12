@@ -1,0 +1,4 @@
+JobID           JobName      User    Account  Partition  AllocCPUS              Submit               Start    Elapsed      State ExitCode 
+------------ ---------- --------- ---------- ---------- ---------- ------------------- ------------------- ---------- ---------- -------- 
+22848300_[1]  summarize    rka3dw     ds2022    gpu-mig          0 2026-11-11T20:03:05             Unknown   00:00:00    PENDING      0:0 
+22848303_[1+  summarize    rka3dw     ds2022    gpu-mig          0 2026-11-11T20:03:40             Unknown   00:00:00    PENDING      0:0 

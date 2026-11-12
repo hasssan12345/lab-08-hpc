@@ -64,15 +64,60 @@ def summarize_book(text):
 
 def upload_summary(key, summary, genre, job):
     """Add the summary and genre to the document with _id key in gutenberg.books, and add a run."""
-    # TODO: Part 1, Step 1 of README.md
-    raise NotImplementedError("upload_summary")
-
+    client = MongoClient(
+        os.environ["MONGODB_ATLAS_URL"],
+        username=os.environ["MONGODB_ATLAS_USER"],
+        password=os.environ["MONGODB_ATLAS_PWD"],
+    )
+    try:
+        collection = client["gutenberg"]["books"]
+        result = collection.update_one(
+            {"_id": key},
+            {
+                "$set": {
+                    "llm_analysis": {
+                        "summary": summary,
+                        "genre": genre,
+                        "model": MODEL,
+                        "at": datetime.now(timezone.utc),
+                    }
+                },
+                "$push": {
+                    "runs": {
+                        "host": socket.gethostname(),
+                        "at": datetime.now(timezone.utc),
+                        "job": job,
+                    }
+                },
+            },
+        )
+        if result.matched_count == 0:
+            logger.warning("No document found for %s", key)
+    except PyMongoError:
+        logger.exception("Failed to upload summary for %s", key)
+        raise
+    finally:
+        client.close()
 
 def main():
     """Summarize book number TASK_ID of BOOK_LIST and save the result in MongoDB."""
-    # TODO: Part 1, Step 1 of README.md
-    raise NotImplementedError("main")
+    book_list = sys.argv[1]
+    task_id = int(sys.argv[2])
 
+    with open(book_list, encoding="utf-8") as f:
+        paths = f.read().splitlines()[1:]
+
+    book_path = paths[task_id - 1]
+    key = book_path.split("/")[-1]
+
+    logger.info("Task %s: %s", task_id, book_path)
+
+    with open(book_path, encoding="utf-8", errors="replace") as f:
+        text = f.read()
+
+    summary, genre = summarize(text)
+    job = os.environ.get("SLURM_JOB_ID", "manual")
+    upload_summary(key, summary, genre, job)
 
 if __name__ == "__main__":
     main()
