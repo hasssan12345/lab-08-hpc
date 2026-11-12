@@ -115,7 +115,7 @@ def main():
     with open(book_path, encoding="utf-8", errors="replace") as f:
         text = f.read()
 
-    summary, genre = summarize(text)
+    summary, genre = summarize_book(text)
     job = os.environ.get("SLURM_JOB_ID", "manual")
     upload_summary(key, summary, genre, job)
 
