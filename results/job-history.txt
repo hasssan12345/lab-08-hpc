@@ -1,0 +1,3 @@
+JobID|JobName|NodeList|Partition|Account|User|State|Start|Elapsed
+22848300_[1]|summarize|None assigned|gpu-mig|ds2022|rka3dw|PENDING|Unknown|00:00:00
+22848303_[1-101]|summarize|None assigned|gpu-mig|ds2022|rka3dw|PENDING|Unknown|00:00:00
