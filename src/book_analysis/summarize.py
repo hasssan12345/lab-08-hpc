@@ -21,7 +21,7 @@ from pymongo.errors import PyMongoError
 from transformers import pipeline
 
 logger = logging.getLogger(__name__)
-
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 MODEL = "Qwen/Qwen2.5-1.5B-Instruct"
 GENRES = ["adventure", "romance", "horror", "science fiction", "mystery", "satire",
           "historical fiction", "children's story", "poetry", "drama"]
@@ -101,23 +101,46 @@ def upload_summary(key, summary, genre, job):
 
 def main():
     """Summarize book number TASK_ID of BOOK_LIST and save the result in MongoDB."""
-    book_list = sys.argv[1]
-    task_id = int(sys.argv[2])
 
+    if len(sys.argv) != 3:
+        logger.error("Usage: summarize.py BOOK_LIST TASK_ID")
+        sys.exit(1)
+
+    book_list = sys.argv[1]
+
+    try:
+        task_id = int(sys.argv[2])
+    except ValueError:
+        logger.error("TASK_ID must be an integer")
+        sys.exit(1)
     with open(book_list, encoding="utf-8") as f:
         paths = f.read().splitlines()[1:]
+
+    if not 1 <= task_id <= len(paths):
+        logger.error("TASK_ID must be between 1 and %s", len(paths))
+        sys.exit(1)    
+
+
+
 
     book_path = paths[task_id - 1]
     key = book_path.split("/")[-1]
 
     logger.info("Task %s: %s", task_id, book_path)
-
-    with open(book_path, encoding="utf-8", errors="replace") as f:
-        text = f.read()
-
+    start_time = time.time()
+    text = read_book(book_path)
     summary, genre = summarize_book(text)
-    job = os.environ.get("SLURM_JOB_ID", "manual")
+    elapsed = time.time() - start_time
+
+    array_job = os.environ.get("SLURM_ARRAY_JOB_ID")
+    array_task = os.environ.get("SLURM_ARRAY_TASK_ID")
+    job = f"{array_job}_{array_task}" if array_job and array_task else None
+
+    logger.info("Key: %s, genre: %s", key, genre)
     upload_summary(key, summary, genre, job)
+    print("Summarized %s in %.1f s on %s" % (key, elapsed, socket.gethostname()))
+    
+
 
 if __name__ == "__main__":
     main()
